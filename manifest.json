@@ -1,0 +1,16 @@
+{
+  "name": "Study Planner — All-in-One Board & Exam Tracker",
+  "short_name": "Study Planner",
+  "description": "Multi-board, multi-class study tracker for CBSE, ICSE/ISC, State Boards, NIOS, Cambridge, JEE & NEET by SBP 359.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F7F8",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

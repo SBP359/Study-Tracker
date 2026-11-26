@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563EB">
+<title>Study Planner — All-in-One Board &amp; Exam Tracker</title>
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ──────────── TOPBAR ──────────── -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-row">
+      <div class="brand-badge" id="topBoardLogo" aria-hidden="true"></div>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="topTitle">Study <span>Planner</span></div>
+        <small id="topSubtitle">All-in-One Board &amp; Exam Tracker · SBP 359</small>
+      </div>
+      <div class="topbar-date" id="topDate"></div>
+      <button class="profile-pill" id="profileBtn" type="button" aria-label="Switch user or edit setup" title="Profile &amp; Setup">
+        <span class="profile-avatar" id="topAvatar">S</span>
+        <span class="profile-pill-name" id="topUserName">Setup</span>
+      </button>
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">☾</button>
+    </div>
+
+    <div class="ptabs">
+      <button class="ptab active" data-page="tracker" type="button">Chapters</button>
+      <button class="ptab" data-page="plan" type="button">Today's Plan</button>
+      <button class="ptab" data-page="revision" type="button">Revision</button>
+      <button class="ptab" data-page="exams" type="button">Exams</button>
+    </div>
+    <div class="stabs" id="stabs"></div>
+  </div>
+</header>
+
+<main class="app-shell">
+  <!-- ──────────── TRACKER ──────────── -->
+  <section class="page active" id="page-tracker">
+    <div class="tracker-wrap">
+      <div class="overview">
+        <div class="ov-ring">
+          <svg width="68" height="68" viewBox="0 0 68 68">
+            <circle class="ov-ring-bg" cx="34" cy="34" r="28" stroke-width="6"/>
+            <circle class="ov-ring-arc" id="ovArc" cx="34" cy="34" r="28" stroke-width="6"
+              stroke="var(--blue)" stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
+            <text class="ov-ring-pct" id="ovPct" x="34" y="32">0%</text>
+            <text class="ov-ring-lbl" x="34" y="43">done</text>
+          </svg>
+        </div>
+        <div class="ov-nums">
+          <div class="onum a"><div class="n" id="ovTotal">0</div><div class="l">Chapters</div></div>
+          <div class="onum b"><div class="n" id="ovDone">0</div><div class="l">Completed</div></div>
+          <div class="onum c"><div class="n" id="ovProg">0</div><div class="l">In Progress</div></div>
+          <div class="onum d"><div class="n" id="ovAvg">—</div><div class="l">Avg Score</div></div>
+        </div>
+      </div>
+
+      <div class="tracker-search-row">
+        <input class="tracker-search" id="chapterSearch" type="search" placeholder="Filter chapters…">
+        <button class="tracker-addon-pill" id="editSubjectsQuickBtn" type="button" title="Edit Board, Class or Subjects">⚙ Subjects</button>
+      </div>
+
+      <div id="trackerContent"></div>
+    </div>
+  </section>
+
+  <!-- ──────────── PLAN ──────────── -->
+  <section class="page" id="page-plan">
+    <div class="plan-wrap">
+      <div class="date-nav">
+        <button class="dnav-btn" id="prevDayBtn" type="button" aria-label="Previous day" title="Previous day">‹</button>
+        <div class="dnav-center">
+          <div class="dnav-main" id="dateMain">—</div>
+          <div class="dnav-sub" id="dateSub">—</div>
+        </div>
+        <button class="dnav-btn" id="nextDayBtn" type="button" aria-label="Next day" title="Next day">›</button>
+      </div>
+
+      <div class="plan-stats">
+        <div class="pstat ps-done"><div class="pn" id="psDone">0</div><div class="pl">Done</div></div>
+        <div class="pstat ps-left"><div class="pn" id="psLeft">0</div><div class="pl">Remaining</div></div>
+        <div class="pstat ps-carry"><div class="pn" id="psCarry">0</div><div class="pl">Carried over</div></div>
+      </div>
+
+      <div class="plan-bar-card">
+        <div class="plan-bar-top">
+          <span id="planBarLabel">Progress</span>
+          <span id="planBarPct">0%</span>
+        </div>
+        <div class="plan-bar"><div class="plan-bar-fill" id="planBarFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="plan-actions">
+        <button class="pact-btn primary" id="autoFillBtn" type="button">⚡ Auto-fill</button>
+        <button class="pact-btn" id="addTaskBtn" type="button">+ Add Task</button>
+        <button class="pact-btn" id="tomorrowBtn" type="button">Tomorrow →</button>
+        <button class="pact-btn" id="customTaskBtn" type="button">＋ Custom task</button>
+      </div>
+
+      <div class="plan-settings-card">
+        <div class="psc-title">Daily Target</div>
+        <div class="psc-row">
+          <div class="psc-lbl">
+            Tasks per day
+            <small>Auto-fill picks this many pending tasks</small>
+          </div>
+          <div class="stepper">
+            <button class="stp-btn" id="targetMinusBtn" type="button">−</button>
+            <div class="stp-val" id="targetVal">5</div>
+            <button class="stp-btn" id="targetPlusBtn" type="button">+</button>
+          </div>
+        </div>
+        <div class="coverage-focus" id="coverageFocus"></div>
+      </div>
+
+      <div id="planBody"></div>
+    </div>
+  </section>
+
+  <!-- ──────────── REVISION ──────────── -->
+  <section class="page" id="page-revision">
+    <div class="revision-wrap">
+      <div class="revision-title" id="revisionExamHeading">Exam dates</div>
+      <div class="exam-date-list" id="boardExamDates"></div>
+      <div class="revision-title">This week</div>
+      <div class="week-grid" id="weekGrid"></div>
+      <div class="week-summary" id="weekSummary"></div>
+    </div>
+  </section>
+
+  <!-- ──────────── EXAMS ──────────── -->
+  <section class="page" id="page-exams">
+    <div class="exams-wrap">
+      <button class="add-exam-btn" id="addExamBtn" type="button">+ Add New Exam</button>
+      <div id="examList"></div>
+      <div id="examAnalysis"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ──────────── FOOTER & CREDITS ──────────── -->
+<footer class="site-footer">
+  <div class="credit-row">
+    <a class="credit-link" href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      GitHub · sbp359
+    </a>
+    <a class="credit-link kofi" href="https://ko-fi.com/sbp359" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><path d="M10 12.5c-.7-1-2.2-1-2.6.2-.4 1 .7 2.2 2.6 3.3 1.9-1.1 3-2.3 2.6-3.3-.4-1.2-1.9-1.2-2.6-.2z" fill="currentColor" stroke="none"/></svg>
+      Support on Ko-fi
+    </a>
+  </div>
+  <div class="backup-actions">
+    <button class="backup-btn" id="exportBackup" type="button" title="Download JSON backup">↓ Backup JSON</button>
+    <button class="backup-btn" id="importBackup" type="button" title="Restore JSON backup">↑ Restore</button>
+    <input id="backupFile" type="file" accept=".json,application/json" hidden>
+  </div>
+  <div class="page-credit">Made with &lt;3 by <a href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer">~SBP359</a> · Stored locally in your browser</div>
+</footer>
+<div class="safe-bot"></div>
+
+<!-- ──────────── ONBOARDING / SETUP WIZARD MODAL ──────────── -->
+<div class="overlay center" id="setupOverlay">
+  <div class="sheet">
+    <div class="wiz-steps" id="wizSteps">
+      <div class="wiz-step"></div>
+      <div class="wiz-step"></div>
+      <div class="wiz-step"></div>
+      <div class="wiz-step"></div>
+    </div>
+    <div class="sheet-title" id="wizTitle">Welcome!</div>
+    <div class="sheet-sub" id="wizSub">Set up your study profile in 4 quick steps</div>
+    <div id="wizBody"></div>
+    <div class="sheet-btns" id="wizBtns"></div>
+  </div>
+</div>
+
+<!-- ──────────── PROFILE SWITCHER MODAL ──────────── -->
+<div class="overlay" id="profileOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Profiles &amp; Setup</div>
+    <div class="sheet-sub">Switch users, create a new profile, or update your subjects</div>
+    <div class="prof-list" id="profileList"></div>
+    <div class="sheet-btns">
+      <button class="sbtn sbtn-cancel" id="editActiveProfileBtn" type="button">Edit Current</button>
+      <button class="sbtn sbtn-ok" id="newProfileBtn" type="button">+ New Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── EXAM MODAL ──────────── -->
+<div class="overlay" id="examOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="examModalTitle">New Exam</div>
+    <div class="sheet-sub">Log marks for each subject</div>
+    <div class="field"><label for="examName">Exam Name</label><input type="text" id="examName" placeholder="e.g. Unit Test 1"></div>
+    <div class="field"><label for="examDate">Date</label><input type="date" id="examDate"></div>
+    <div class="esc-label">Subject Scores</div>
+    <div class="esc-list" id="escList"></div>
+    <div class="sheet-btns">
+      <button class="sbtn sbtn-cancel" data-close="examOverlay" type="button">Cancel</button>
+      <button class="sbtn sbtn-ok" id="saveExamBtn" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── ASSIGN MODAL ──────────── -->
+<div class="overlay" id="assignOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Task</div>
+    <div class="sheet-sub">Pick a chapter, type, and date</div>
+    <input class="assign-search" type="text" placeholder="Search chapter…" id="asSearch">
+    <div class="assign-list" id="asList"></div>
+    <div class="type-label">Task Type</div>
+    <div class="type-pills" id="assignTypePills">
+      <div class="type-pill" data-tp="read">Read</div>
+      <div class="type-pill" data-tp="ncert">Book</div>
+      <div class="type-pill" data-tp="pyq">PYQ</div>
+    </div>
+    <div class="field"><label for="asDate">Date</label><input type="date" id="asDate"></div>
+    <div class="sheet-btns">
+      <button class="sbtn sbtn-cancel" data-close="assignOverlay" type="button">Cancel</button>
+      <button class="sbtn sbtn-ok" id="confirmAssignBtn" type="button">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── CUSTOM PLAN MODAL ──────────── -->
+<div class="overlay" id="customOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Custom task</div>
+    <div class="sheet-sub">Write your own study task</div>
+    <div class="field"><label for="customTaskTitle">Task</label><input type="text" id="customTaskTitle" maxlength="120" placeholder="e.g. Revise electrochemistry notes"></div>
+    <div class="field"><label for="customTaskDate">Date</label><input type="date" id="customTaskDate"></div>
+    <div class="sheet-btns">
+      <button class="sbtn sbtn-cancel" data-close="customOverlay" type="button">Cancel</button>
+      <button class="sbtn sbtn-ok" id="confirmCustomBtn" type="button">Add task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── RESCHEDULE MODAL ──────────── -->
+<div class="overlay" id="rschedOverlay">
+  <div class="sheet" style="padding-bottom:24px">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Move Task</div>
+    <div class="sheet-sub">Pick a new date</div>
+    <div class="field"><label for="rschedDate">New Date</label><input type="date" id="rschedDate"></div>
+    <div class="sheet-btns">
+      <button class="sbtn sbtn-cancel" data-close="rschedOverlay" type="button">Cancel</button>
+      <button class="sbtn sbtn-ok" id="confirmReschedBtn" type="button">Move</button>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── CONFIRM MODAL (replaces native confirm) ──────────── -->
+<div class="overlay center" id="confirmOverlay">
+  <div class="sheet" style="max-width:400px">
+    <div class="sheet-title" id="confirmTitle">Confirm</div>
+    <div class="sheet-sub" id="confirmMsg" style="margin-bottom:16px"></div>
+    <div class="sheet-btns">
+      <button class="sbtn sbtn-cancel" id="confirmCancelBtn" type="button">Cancel</button>
+      <button class="sbtn sbtn-danger" id="confirmOkBtn" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="data/syllabus.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/app.js"></script>
+<script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js" defer onload="try{if(window.kofiWidgetOverlay){kofiWidgetOverlay.draw('sbp359',{'type':'floating-chat','floating-chat.donateButton.text':'Support SBP','floating-chat.donateButton.background-color':'#2563EB','floating-chat.donateButton.text-color':'#ffffff'});}}catch(e){}"></script>
+</body>
+</html>
