@@ -18,7 +18,12 @@
       <div class="brand-badge" id="topBoardLogo" aria-hidden="true"></div>
       <div class="topbar-title">
         <div class="topbar-title-main" id="topTitle">Study <span>Planner</span></div>
-        <small id="topSubtitle">All-in-One Board &amp; Exam Tracker · SBP 359</small>
+        <div class="topbar-sub-row">
+          <small id="topSubtitle">All-in-One Board &amp; Exam Tracker</small>
+          <a class="topbar-sbp-link" href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer" title="SBP 359">
+            <img class="topbar-sbp-logo" src="assets/sbp359-logo.png" alt="SBP 359">
+          </a>
+        </div>
       </div>
       <div class="topbar-date" id="topDate"></div>
       <button class="profile-pill" id="profileBtn" type="button" aria-label="Switch user or edit setup" title="Profile &amp; Setup">
@@ -125,6 +130,7 @@
   <!-- ──────────── REVISION ──────────── -->
   <section class="page" id="page-revision">
     <div class="revision-wrap">
+      <div id="revisionAnalysis"></div>
       <div class="revision-title" id="revisionExamHeading">Exam dates</div>
       <div class="exam-date-list" id="boardExamDates"></div>
       <div class="revision-title">This week</div>
@@ -136,9 +142,9 @@
   <!-- ──────────── EXAMS ──────────── -->
   <section class="page" id="page-exams">
     <div class="exams-wrap">
+      <div id="examAnalysis"></div>
       <button class="add-exam-btn" id="addExamBtn" type="button">+ Add New Exam</button>
       <div id="examList"></div>
-      <div id="examAnalysis"></div>
     </div>
   </section>
 </main>
@@ -161,8 +167,12 @@
     <input id="backupFile" type="file" accept=".json,application/json" hidden>
   </div>
   <div class="page-credit">Made with &lt;3 by <a href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer">~SBP359</a> · Stored locally in your browser</div>
+  <div class="footer-brand-wrap">
+    <a class="footer-brand-badge" href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer" title="SBP 359 on GitHub">
+      <img src="assets/sbp359-logo.png" alt="SBP 359">
+    </a>
+  </div>
 </footer>
-<div class="safe-bot"></div>
 
 <!-- ──────────── ONBOARDING / SETUP WIZARD MODAL ──────────── -->
 <div class="overlay center" id="setupOverlay">
@@ -279,6 +289,6 @@
 <script src="data/syllabus.js"></script>
 <script src="js/icons.js"></script>
 <script src="js/app.js"></script>
-<script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js" defer onload="try{if(window.kofiWidgetOverlay){kofiWidgetOverlay.draw('sbp359',{'type':'floating-chat','floating-chat.donateButton.text':'Support SBP','floating-chat.donateButton.background-color':'#2563EB','floating-chat.donateButton.text-color':'#ffffff'});}}catch(e){}"></script>
+<script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js" defer onload="try{if(window.kofiWidgetOverlay){kofiWidgetOverlay.draw('sbp359',{'type':'floating-chat','floating-chat.donateButton.text':'Support','floating-chat.donateButton.background-color':'#2563EB','floating-chat.donateButton.text-color':'#ffffff'});}}catch(e){}"></script>
 </body>
 </html>

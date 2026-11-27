@@ -41,7 +41,7 @@
 
 /* ─── RESET ─── */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 input,button,select{font-family:inherit}
 [data-theme="dark"] .topbar{background:rgba(16,23,21,.94)}
 [data-theme="dark"] .ch-card.completed{background:var(--green-lt)}
@@ -99,7 +99,7 @@ input[type=number]{-moz-appearance:textfield}
 }
 
 /* ─── PAGES ─── */
-.app-shell{max-width:760px;margin:0 auto}
+.app-shell{flex:1 0 auto;width:100%;max-width:760px;margin:0 auto}
 .page{display:none}.page.active{display:block}
 .tracker-wrap,.plan-wrap,.revision-wrap,.exams-wrap{padding:14px 14px 42px}
 
@@ -333,7 +333,7 @@ input[type=number]{-moz-appearance:textfield}
 .sa-avg{font-size:12px;font-weight:700;min-width:36px;text-align:right}
 
 /* ─── FOOTER, CREDITS & KO-FI ─── */
-.site-footer{max-width:760px;margin:0 auto;padding:12px 14px 10px;text-align:center}
+.site-footer{width:100%;max-width:760px;margin:auto auto 0;padding:14px 14px calc(14px + var(--sb));text-align:center;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
 .credit-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .credit-link{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;font-weight:600;text-decoration:none;transition:background .12s,border-color .12s}
 .credit-link:hover{background:var(--faint);border-color:var(--border2)}
@@ -468,3 +468,79 @@ input[type=number]{-moz-appearance:textfield}
 /* ─── TOAST ─── */
 .toast{position:fixed;left:50%;bottom:calc(20px + var(--sb));transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:12.5px;font-weight:600;z-index:900;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── SUBJECT CIRCLE CARDS GRID (Chapters -> All tab) ─── */
+.subj-cards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.subj-cards-grid[hidden]{display:none!important}
+@media(max-width:440px){.subj-cards-grid{grid-template-columns:1fr}}
+.subj-box-card{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;text-align:left;transition:border-color .15s,background .12s,transform .1s;width:100%}
+.subj-box-card:hover{background:var(--faint);border-color:var(--border2)}
+.subj-box-card:active{transform:scale(.99)}
+.subj-ring{flex-shrink:0}
+.subj-ring svg{display:block}
+.subj-ring-bg{fill:none;stroke:var(--border)}
+.subj-ring-arc{fill:none;stroke-linecap:round;transform:rotate(-90deg);transform-origin:26px 26px;transition:stroke-dashoffset .45s ease}
+.subj-ring-pct{font-size:10.5px;font-weight:800;fill:var(--text);text-anchor:middle;dominant-baseline:middle}
+.subj-box-info{flex:1;min-width:0}
+.subj-box-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.subj-box-ico{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.subj-box-ico svg{width:12px;height:12px}
+.subj-box-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subj-box-meta{font-size:11.5px;color:var(--muted);line-height:1.35}
+.subj-box-arrow{font-size:14px;color:var(--border2);flex-shrink:0}
+
+/* ─── PREP METER STARS ─── */
+.prep-set{display:flex;align-items:center;gap:4px}
+.prep-star{width:34px;height:34px;border:1px solid var(--border);border-radius:var(--r-xs);background:var(--faint);color:var(--border2);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s,border-color .12s,background .12s,color .12s}
+.prep-star:active{transform:scale(.92)}
+.prep-star.lit-red{color:#DC2626;background:var(--red-lt);border-color:#FECACA}
+.prep-star.lit-orange{color:#EA580C;background:var(--orange-lt);border-color:#FED7AA}
+.prep-star.lit-yellow{color:#CA8A04;background:#FEFCE8;border-color:#FEF08A}
+.prep-star.lit-green{color:#16A34A;background:var(--green-lt);border-color:#BBF7D0}
+[data-theme="dark"] .prep-star.lit-red{color:#f18487;border-color:#5a3033}
+[data-theme="dark"] .prep-star.lit-orange{color:#f0b16b;border-color:#5c452b}
+[data-theme="dark"] .prep-star.lit-yellow{color:#facc15;background:#352f18;border-color:#5e5224}
+[data-theme="dark"] .prep-star.lit-green{color:#68cb9d;border-color:#28543a}
+.prep-note{font-size:11.5px;font-weight:600;color:var(--muted);margin-left:6px}
+
+/* ─── REVISION READINESS ANALYSIS ─── */
+.rev-analysis-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px}
+.rev-verdict-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.rev-verdict-title{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.rev-pace-pill{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.rev-pace-pill.ontime{background:var(--green-lt);color:var(--green)}
+.rev-pace-pill.tight{background:var(--orange-lt);color:var(--orange)}
+.rev-pace-pill.behind{background:var(--red-lt);color:var(--red)}
+.rev-pace-pill.neutral{background:var(--faint);color:var(--muted)}
+.rev-verdict-msg{font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:12px}
+.rev-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+@media(max-width:440px){.rev-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rev-kpi{background:var(--faint);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px}
+.rev-kpi-v{font-size:16px;font-weight:800;line-height:1.1;color:var(--text)}
+.rev-kpi-l{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ─── MINIMAL EXAMS UI ─── */
+.analysis-wrap{margin-top:0;margin-bottom:14px}
+.add-exam-btn{margin-bottom:14px;padding:11px 14px;font-size:13.5px}
+.exam-card-min{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+.ecm-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ecm-info{flex:1;min-width:0}
+.ecm-name{font-size:14.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ecm-date{font-size:11px;color:var(--muted);margin-top:1px}
+.ecm-badge{font-size:12px;font-weight:800;padding:4px 8px;border-radius:var(--r-xs);background:var(--faint);white-space:nowrap}
+.ecm-bar{height:4px;background:var(--faint);border-radius:2px;overflow:hidden;margin-bottom:9px}
+.ecm-bar-fill{height:100%;border-radius:2px;transition:width .35s}
+.ecm-chips{display:flex;flex-wrap:wrap;gap:5px}
+.ecm-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:6px;background:var(--faint);border:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text)}
+.ecm-chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ─── TOPBAR & BOTTOM SBP359 LOGO ─── */
+.topbar-sub-row{display:flex;align-items:center;gap:6px;margin-top:2px;min-width:0}
+.topbar-sub-row small{margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-sbp-link{display:inline-flex;align-items:center;flex-shrink:0;opacity:.92;transition:opacity .12s}
+.topbar-sbp-link:hover{opacity:1}
+.topbar-sbp-logo{display:block;height:12px;width:auto;object-fit:contain}
+.footer-brand-wrap{display:flex;justify-content:center;margin-top:10px}
+.footer-brand-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:8px;transition:transform .12s,opacity .12s;opacity:.92}
+.footer-brand-badge:hover{transform:translateY(-1px);opacity:1}
+.footer-brand-badge img{display:block;height:22px;width:auto;max-width:150px;object-fit:contain}

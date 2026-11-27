@@ -168,8 +168,8 @@
     if (!u) return { read: false, ncert: false, pyq: false, got: '', max: '25', difficulty: 0, revisions: [false, false] };
     if (!u.chapters) u.chapters = {};
     const k = ck(subj, ch);
-    if (!u.chapters[k]) u.chapters[k] = { read: false, ncert: false, pyq: false, got: '', max: '25', difficulty: 0, revisions: [false, false] };
-    if (u.chapters[k].difficulty === undefined) u.chapters[k].difficulty = 0;
+    if (!u.chapters[k]) u.chapters[k] = { read: false, ncert: false, pyq: false, got: '', max: '25', prep: 0, revisions: [false, false] };
+    if (u.chapters[k].prep === undefined) u.chapters[k].prep = 0;
     if (!Array.isArray(u.chapters[k].revisions)) u.chapters[k].revisions = [false, false];
     return u.chapters[k];
   }
@@ -202,6 +202,18 @@
     };
   }
   function scoreColor(pct) { return pct >= 75 ? '#16A34A' : pct >= 40 ? '#EA580C' : '#DC2626'; }
+  function prepTierClass(level) {
+    if (level <= 0) return '';
+    if (level <= 2) return 'lit-red';
+    if (level === 3) return 'lit-orange';
+    if (level === 4) return 'lit-yellow';
+    return 'lit-green';
+  }
+  function prepTierText(level) {
+    if (!level) return 'Not rated';
+    const labels = ['', 'Needs prep', 'Early stage', 'Getting there', 'Almost ready', 'Exam ready'];
+    return `${level}/5 · ${labels[level] || ''}`;
+  }
   function escHtml(str) {
     return String(str == null ? '' : str)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -266,7 +278,7 @@
     if (!u) {
       document.getElementById('topBoardLogo').innerHTML = window.APP_ICONS.getBoardLogoSVG('cbse');
       document.getElementById('topTitle').innerHTML = 'Study <span>Planner</span>';
-      document.getElementById('topSubtitle').textContent = 'All-in-One Board & Exam Tracker · SBP 359';
+      document.getElementById('topSubtitle').textContent = 'All-in-One Tracker ·';
       document.getElementById('topAvatar').textContent = '+';
       document.getElementById('topAvatar').style.background = '#2563EB';
       document.getElementById('topUserName').textContent = 'Setup';
@@ -278,7 +290,7 @@
     const addonTxt = u.addon && DB.competitiveAddons[u.addon] ? ` + ${DB.competitiveAddons[u.addon].short}` : '';
     document.getElementById('topBoardLogo').innerHTML = window.APP_ICONS.getBoardLogoSVG(board.id, board.accent);
     document.getElementById('topTitle').innerHTML = `${escHtml(board.name)} <span>${escHtml(cls.shortLabel)}${escHtml(addonTxt)}</span>`;
-    document.getElementById('topSubtitle').textContent = `${u.name} · Study Planner by SBP 359`;
+    document.getElementById('topSubtitle').textContent = 'Study Planner by';
     document.getElementById('topAvatar').textContent = (u.name.trim()[0] || 'S').toUpperCase();
     document.getElementById('topAvatar').style.background = u.avatarColor || '#2563EB';
     document.getElementById('topUserName').textContent = u.name;
@@ -342,7 +354,15 @@
 
   function applyStab() {
     const q = (document.getElementById('chapterSearch').value || '').trim().toLowerCase();
+    const grid = document.getElementById('subjCardsGrid');
+    const showAllGrid = curTab === 'All' && !q;
+    if (grid) { grid.hidden = !showAllGrid; grid.style.display = showAllGrid ? '' : 'none'; }
+
     document.querySelectorAll('.subj-block').forEach(block => {
+      if (showAllGrid) {
+        block.hidden = true;
+        return;
+      }
       const tabMatch = curTab === 'All' || block.dataset.s === curTab;
       if (!tabMatch) {
         block.hidden = true;
@@ -363,6 +383,73 @@
     });
   }
 
+  function buildSubjectCardsGrid(subjects) {
+    const grid = document.createElement('div');
+    grid.className = 'subj-cards-grid';
+    grid.id = 'subjCardsGrid';
+    const circ = 2 * Math.PI * 21; // r=21 -> 131.95
+    subjects.forEach(subj => {
+      const chs = subjAllChs(subj);
+      const doneN = chs.filter(ch => isDone(subj.name, ch)).length;
+      const doneSteps = chs.reduce((acc, ch) => acc + stepsCount(subj.name, ch), 0);
+      const totalSteps = chs.length * 3;
+      const pct = totalSteps ? Math.round((doneSteps / totalSteps) * 100) : 0;
+      const rated = chs.map(ch => cs(subj.name, ch).prep || 0).filter(v => v > 0);
+      const avgPrep = rated.length ? (rated.reduce((a, b) => a + b, 0) / rated.length).toFixed(1) : null;
+      const clr = getSubjColor(subj.name);
+      const offset = circ - (pct / 100) * circ;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'subj-box-card';
+      btn.dataset.s = subj.name;
+      btn.innerHTML = `
+        <div class="subj-ring">
+          <svg width="52" height="52" viewBox="0 0 52 52">
+            <circle class="subj-ring-bg" cx="26" cy="26" r="21" stroke-width="5"/>
+            <circle class="subj-ring-arc" cx="26" cy="26" r="21" stroke-width="5"
+              stroke="${clr}" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"/>
+            <text class="subj-ring-pct" x="26" y="27">${pct}%</text>
+          </svg>
+        </div>
+        <div class="subj-box-info">
+          <div class="subj-box-top">
+            <div class="subj-box-ico" style="background:${clr}1f;color:${clr}">${window.APP_ICONS.getSubjectIconSVG(getSubjIconKey(subj.name))}</div>
+            <div class="subj-box-name">${escHtml(subj.name)}</div>
+          </div>
+          <div class="subj-box-meta">${doneN}/${chs.length} chapters · ${doneSteps}/${totalSteps} steps${avgPrep ? ` · ★ ${avgPrep}` : ''}</div>
+        </div>
+        <div class="subj-box-arrow">›</div>`;
+      btn.addEventListener('click', () => {
+        curTab = subj.name;
+        buildStabs();
+        applyStab();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      grid.appendChild(btn);
+    });
+    return grid;
+  }
+
+  function refreshSubjCard(subj) {
+    const card = document.querySelector(`#subjCardsGrid .subj-box-card[data-s="${CSS.escape(subj.name)}"]`);
+    if (!card) return;
+    const chs = subjAllChs(subj);
+    const doneN = chs.filter(ch => isDone(subj.name, ch)).length;
+    const doneSteps = chs.reduce((acc, ch) => acc + stepsCount(subj.name, ch), 0);
+    const totalSteps = chs.length * 3;
+    const pct = totalSteps ? Math.round((doneSteps / totalSteps) * 100) : 0;
+    const rated = chs.map(ch => cs(subj.name, ch).prep || 0).filter(v => v > 0);
+    const avgPrep = rated.length ? (rated.reduce((a, b) => a + b, 0) / rated.length).toFixed(1) : null;
+    const circ = 2 * Math.PI * 21;
+    const arc = card.querySelector('.subj-ring-arc');
+    if (arc) arc.setAttribute('stroke-dashoffset', (circ - (pct / 100) * circ).toFixed(1));
+    const pctEl = card.querySelector('.subj-ring-pct');
+    if (pctEl) pctEl.textContent = pct + '%';
+    const metaEl = card.querySelector('.subj-box-meta');
+    if (metaEl) metaEl.textContent = `${doneN}/${chs.length} chapters · ${doneSteps}/${totalSteps} steps${avgPrep ? ` · ★ ${avgPrep}` : ''}`;
+  }
+
   function buildTracker() {
     const root = document.getElementById('trackerContent');
     root.innerHTML = '';
@@ -371,6 +458,8 @@
       root.innerHTML = `<div class="plan-empty"><div class="pe-ico">📚</div><div class="pe-txt">No subjects selected yet.<br>Tap <b>⚙ Subjects</b> to choose your board, class, and subjects.</div></div>`;
       return;
     }
+
+    root.appendChild(buildSubjectCardsGrid(subjects));
 
     subjects.forEach(subj => {
       const chs = subjAllChs(subj);
@@ -466,10 +555,13 @@
         </div>
         <div class="chapter-tools">
           <div class="chapter-tool">
-            <div class="tool-label">Difficulty</div>
-            <div class="difficulty-set" role="group" aria-label="Rate chapter difficulty from 1 to 5">
-              ${[1, 2, 3, 4, 5].map(level => `<button type="button" class="difficulty-btn${s.difficulty === level ? ' active' : ''}" data-level="${level}" aria-pressed="${s.difficulty === level}">${level}</button>`).join('')}
-              <span class="difficulty-note">${s.difficulty ? `${s.difficulty}/5` : 'Not rated'}</span>
+            <div class="tool-label">Prep Meter</div>
+            <div class="prep-set" role="group" aria-label="Rate how prepared you are from 1 to 5 stars">
+              ${[1, 2, 3, 4, 5].map(level => {
+                const lit = s.prep >= level ? ' ' + prepTierClass(s.prep) : '';
+                return `<button type="button" class="prep-star${lit}" data-level="${level}" aria-label="Prep ${level} star" aria-pressed="${s.prep >= level}">★</button>`;
+              }).join('')}
+              <span class="prep-note">${escHtml(prepTierText(s.prep))}</span>
             </div>
           </div>
           <div class="chapter-tool">
@@ -498,18 +590,22 @@
       });
     });
 
-    card.querySelectorAll('.difficulty-btn').forEach(button => {
+    card.querySelectorAll('.prep-star').forEach(button => {
       button.addEventListener('click', e => {
         e.stopPropagation();
         const st = cs(subj.name, ch);
-        st.difficulty = Number(button.dataset.level);
+        const clicked = Number(button.dataset.level);
+        st.prep = st.prep === clicked ? 0 : clicked;
         saveStore();
-        card.querySelectorAll('.difficulty-btn').forEach(item => {
-          const sel = Number(item.dataset.level) === st.difficulty;
-          item.classList.toggle('active', sel);
-          item.setAttribute('aria-pressed', sel);
+        const tier = prepTierClass(st.prep);
+        card.querySelectorAll('.prep-star').forEach(item => {
+          const lvl = Number(item.dataset.level);
+          const lit = st.prep >= lvl;
+          item.className = 'prep-star' + (lit && tier ? ' ' + tier : '');
+          item.setAttribute('aria-pressed', lit);
         });
-        card.querySelector('.difficulty-note').textContent = `${st.difficulty}/5`;
+        card.querySelector('.prep-note').textContent = prepTierText(st.prep);
+        refreshSubjCard(subj);
       });
     });
 
@@ -588,6 +684,7 @@
   }
 
   function refreshSubjHdr(subj) {
+    refreshSubjCard(subj);
     const block = Array.from(document.querySelectorAll('.subj-block')).find(el => el.dataset.s === subj.name);
     if (!block) return;
     const chs = subjAllChs(subj);
@@ -677,11 +774,11 @@
         ['read', 'ncert', 'pyq'].forEach((type, index) => {
           const key = subj.name + '§' + ch + '§' + type;
           if (!state[type] && !already.has(key)) {
-            candidates.push({ subj: subj.name, ch, type, index, steps: stepsCount(subj.name, ch), difficulty: state.difficulty || 0 });
+            candidates.push({ subj: subj.name, ch, type, index, steps: stepsCount(subj.name, ch), prep: state.prep || 0 });
           }
         });
       });
-      candidates.sort((a, b) => a.steps - b.steps || b.difficulty - a.difficulty || a.index - b.index);
+      candidates.sort((a, b) => a.steps - b.steps || a.prep - b.prep || a.index - b.index);
       return { subj, need: subjectPlanStats(subj).need, candidates };
     }).filter(item => item.candidates.length).sort((a, b) => b.need - a.need);
 
@@ -851,6 +948,91 @@
   /* ══════════════════════════════════════════════
      REVISION PAGE
   ══════════════════════════════════════════════ */
+  function renderRevisionAnalysis() {
+    const u = getUser();
+    const root = document.getElementById('revisionAnalysis');
+    if (!u || !root) return;
+    const subjects = getActiveSubjects();
+    let totalCh = 0, pendingCh = 0, pendingSteps = 0, totalRevDone = 0, totalRevPossible = 0;
+    let prepSum = 0, prepCount = 0, lowPrepCount = 0;
+    let earliestDays = null, totalNeededStepsPerDay = 0, behindSubjs = 0, datedSubjs = 0;
+
+    subjects.forEach(subj => {
+      const chs = subjAllChs(subj);
+      let subjRemCh = 0, subjRemSteps = 0;
+      chs.forEach(ch => {
+        totalCh++;
+        const st = cs(subj.name, ch);
+        const sc = stepsCount(subj.name, ch);
+        if (sc < 3) { pendingCh++; subjRemCh++; }
+        const remS = 3 - sc;
+        pendingSteps += remS;
+        subjRemSteps += remS;
+        totalRevPossible += 2;
+        totalRevDone += (st.revisions || []).filter(Boolean).length;
+        if (st.prep > 0) {
+          prepSum += st.prep;
+          prepCount++;
+          if (st.prep <= 2) lowPrepCount++;
+        }
+      });
+      const iso = u.boardDates && u.boardDates[subj.name];
+      if (iso) {
+        datedSubjs++;
+        const days = Math.round((fromISO(iso) - fromISO(todayISO())) / 86400000);
+        if (days > 0) {
+          if (earliestDays === null || days < earliestDays) earliestDays = days;
+          totalNeededStepsPerDay += subjRemSteps / days;
+          if (subjRemCh > days) behindSubjs++;
+        } else if (subjRemCh > 0) {
+          behindSubjs++;
+        }
+      }
+    });
+
+    const dailyTarget = getPlan().settings.target || 5;
+    const avgPrep = prepCount ? (prepSum / prepCount).toFixed(1) : '—';
+    let pillCls = 'neutral', pillTxt = 'Set Exam Dates', msg = '';
+
+    if (pendingCh === 0 && totalCh > 0) {
+      pillCls = 'ontime';
+      pillTxt = 'Syllabus Complete';
+      msg = `All ${totalCh} chapters are complete! Focus on Revision rounds (${totalRevDone}/${totalRevPossible} done)${lowPrepCount ? ` and boosting ${lowPrepCount} low-prep chapters` : ''}.`;
+    } else if (!datedSubjs) {
+      pillCls = 'neutral';
+      pillTxt = 'Dates Needed';
+      const daysAtTarget = Math.ceil(pendingSteps / dailyTarget);
+      msg = `You have ${pendingCh} pending chapters (${pendingSteps} steps left). At your target of ${dailyTarget} tasks/day, you'll finish in ~${daysAtTarget} days. Add exam dates below to check pace.`;
+    } else if (behindSubjs > 0 || totalNeededStepsPerDay > dailyTarget * 1.15) {
+      pillCls = 'behind';
+      pillTxt = 'Behind Pace';
+      msg = `You need ~${totalNeededStepsPerDay.toFixed(1)} study steps/day across upcoming exams (your daily target is ${dailyTarget}). ${behindSubjs ? `${behindSubjs} subject(s) have more pending chapters than days left.` : 'Increase your daily target or prioritize low-prep chapters.'}`;
+    } else if (totalNeededStepsPerDay > dailyTarget * 0.8) {
+      pillCls = 'tight';
+      pillTxt = 'Tight Pace';
+      msg = `You need ~${totalNeededStepsPerDay.toFixed(1)} steps/day against your ${dailyTarget} tasks/day target${earliestDays ? ` (nearest exam in ${earliestDays}d)` : ''}. Stay consistent${lowPrepCount ? ` and review ${lowPrepCount} low-prep (≤2★) chapters` : ''}.`;
+    } else {
+      pillCls = 'ontime';
+      pillTxt = 'On Pace';
+      msg = `Looking solid — you need ~${totalNeededStepsPerDay.toFixed(1)} steps/day, comfortably inside your ${dailyTarget} tasks/day target${earliestDays ? ` (nearest exam in ${earliestDays}d)` : ''}.`;
+    }
+
+    root.innerHTML = `
+      <div class="rev-analysis-card">
+        <div class="rev-verdict-row">
+          <div class="rev-verdict-title">Readiness &amp; Pace Analysis</div>
+          <span class="rev-pace-pill ${pillCls}">${pillTxt}</span>
+        </div>
+        <div class="rev-verdict-msg">${escHtml(msg)}</div>
+        <div class="rev-kpis">
+          <div class="rev-kpi"><div class="rev-kpi-v">${pendingCh}</div><div class="rev-kpi-l">Pending Ch</div></div>
+          <div class="rev-kpi"><div class="rev-kpi-v">${pendingSteps}</div><div class="rev-kpi-l">Pending Steps</div></div>
+          <div class="rev-kpi"><div class="rev-kpi-v">${totalRevDone}/${totalRevPossible}</div><div class="rev-kpi-l">Rev Rounds</div></div>
+          <div class="rev-kpi"><div class="rev-kpi-v">${avgPrep === '—' ? '—' : '★ ' + avgPrep}</div><div class="rev-kpi-l">Avg Prep${lowPrepCount ? ` (${lowPrepCount} low)` : ''}</div></div>
+        </div>
+      </div>`;
+  }
+
   function renderRevision() {
     const u = getUser();
     if (!u) return;
@@ -868,35 +1050,39 @@
         <div class="exam-countdown"></div>`;
       const input = row.querySelector('input');
       const countdown = row.querySelector('.exam-countdown');
-      const updateCountdown = () => {
+      const updateCountdown = (fromChange) => {
         const iso = input.value;
-        const remaining = subjAllChs(subj).filter(ch => !isDone(subj.name, ch)).length;
+        const chs = subjAllChs(subj);
+        const remaining = chs.filter(ch => !isDone(subj.name, ch)).length;
+        const remSteps = chs.reduce((sum, ch) => sum + (3 - stepsCount(subj.name, ch)), 0);
         if (iso) u.boardDates[subj.name] = iso; else delete u.boardDates[subj.name];
         saveStore();
         if (!iso) {
-          countdown.textContent = `${remaining} chapters incomplete`;
+          countdown.textContent = `${remaining} chapters (${remSteps} steps) pending`;
           countdown.className = 'exam-countdown';
-          return;
-        }
-        const days = Math.round((fromISO(iso) - fromISO(todayISO())) / 86400000);
-        if (days < 0) {
-          countdown.textContent = `Exam passed ${Math.abs(days)} days ago · ${remaining} chapters incomplete`;
-          countdown.className = 'exam-countdown' + (remaining ? ' behind' : ' ontime');
-        } else if (days === 0) {
-          countdown.textContent = `Exam today · ${remaining} chapters incomplete`;
-          countdown.className = 'exam-countdown' + (remaining ? ' behind' : ' ontime');
-        } else if (remaining > days) {
-          countdown.textContent = `${days} days left · ${remaining} chapters incomplete · Behind pace (~${(remaining / days).toFixed(1)} ch/day needed)`;
-          countdown.className = 'exam-countdown behind';
         } else {
-          countdown.textContent = `${days} days left · ${remaining} chapters incomplete · On pace`;
-          countdown.className = 'exam-countdown ontime';
+          const days = Math.round((fromISO(iso) - fromISO(todayISO())) / 86400000);
+          if (days < 0) {
+            countdown.textContent = `Exam passed ${Math.abs(days)}d ago · ${remaining} ch pending`;
+            countdown.className = 'exam-countdown' + (remaining ? ' behind' : ' ontime');
+          } else if (days === 0) {
+            countdown.textContent = `Exam today · ${remaining} ch pending`;
+            countdown.className = 'exam-countdown' + (remaining ? ' behind' : ' ontime');
+          } else if (remaining > days) {
+            countdown.textContent = `${days}d left · ${remaining} ch (${remSteps} steps) pending · Behind (~${(remaining / days).toFixed(1)} ch/day)`;
+            countdown.className = 'exam-countdown behind';
+          } else {
+            countdown.textContent = `${days}d left · ${remaining} ch (${remSteps} steps) pending · On pace`;
+            countdown.className = 'exam-countdown ontime';
+          }
         }
+        if (fromChange) renderRevisionAnalysis();
       };
-      input.addEventListener('change', updateCountdown);
-      updateCountdown();
+      input.addEventListener('change', () => updateCountdown(true));
+      updateCountdown(false);
       dateRoot.appendChild(row);
     });
+    renderRevisionAnalysis();
 
     const grid = document.getElementById('weekGrid');
     const summary = document.getElementById('weekSummary');
@@ -998,8 +1184,15 @@
     const listEl = document.getElementById('examList');
     const anaEl = document.getElementById('examAnalysis');
     if (!exams.length) {
-      listEl.innerHTML = `<div class="plan-empty"><div class="pe-ico">📋</div><div class="pe-txt">No exams yet. Tap <b>+ Add New Exam</b> to log marks and see analytics.</div></div>`;
-      anaEl.innerHTML = '';
+      anaEl.innerHTML = `<div class="analysis-wrap">
+        <div class="analysis-grid">
+          <div class="acard"><div class="av" style="color:var(--muted)">—</div><div class="al">Overall Average</div></div>
+          <div class="acard"><div class="av" style="color:var(--muted)">—</div><div class="al">Best Exam</div></div>
+          <div class="acard"><div class="av" style="color:var(--muted)">—</div><div class="al">Lowest Exam</div></div>
+          <div class="acard"><div class="av" style="color:var(--blue)">0</div><div class="al">Exams Logged</div></div>
+        </div>
+      </div>`;
+      listEl.innerHTML = `<div class="plan-empty" style="padding:24px 16px"><div class="pe-txt">No exams logged yet. Tap <b>+ Add New Exam</b> above to track your marks.</div></div>`;
       return;
     }
     listEl.innerHTML = '';
@@ -1010,38 +1203,29 @@
       const tp = tm ? Math.round(tg / tm * 100) : 0;
       const tc = scoreColor(tp);
 
-      let subjRows = '';
-      ks.forEach(sname => {
+      const chips = ks.map(sname => {
         const sc = ex.scores[sname];
-        if (!sc) return;
+        if (!sc) return '';
         const p = sc.max ? Math.round(sc.got / sc.max * 100) : 0;
-        const c = scoreColor(p);
-        subjRows += `<div class="exam-subj-row">
-          <div class="esr-dot" style="background:${getSubjColor(sname)}"></div>
-          <div class="esr-name">${escHtml(sname)}</div>
-          <div class="esr-bar-wrap"><div class="esr-bar" style="width:${p}%;background:${c}"></div></div>
-          <div class="esr-score" style="color:${c}">${sc.got}/${sc.max}</div>
-        </div>`;
-      });
+        return `<span class="ecm-chip"><span class="ecm-chip-dot" style="background:${getSubjColor(sname)}"></span>${escHtml(getSubjShort(sname))} <span style="color:${scoreColor(p)}">${sc.got}/${sc.max}</span></span>`;
+      }).join('');
 
       const card = document.createElement('div');
-      card.className = 'exam-card';
+      card.className = 'exam-card-min';
       card.innerHTML = `
-        <div class="exam-card-top">
-          <div class="exam-card-hdr">
-            <div class="exam-card-name">${escHtml(ex.name)}</div>
-            <div class="exam-card-btns">
-              <button type="button" class="exam-btn edit-btn">Edit</button>
-              <button type="button" class="exam-btn del del-btn">Delete</button>
-            </div>
+        <div class="ecm-top">
+          <div class="ecm-info">
+            <div class="ecm-name">${escHtml(ex.name)}</div>
+            <div class="ecm-date">${escHtml(fmtDate(ex.date))} · ${tg}/${tm}</div>
           </div>
-          <div class="exam-card-date">${escHtml(fmtDate(ex.date))}</div>
+          <div class="ecm-badge" style="color:${tc}">${tp}%</div>
+          <div class="exam-card-btns">
+            <button type="button" class="exam-btn edit-btn">Edit</button>
+            <button type="button" class="exam-btn del del-btn">✕</button>
+          </div>
         </div>
-        <div class="exam-total-row">
-          <div class="exam-total-bar-wrap"><div class="exam-total-bar" style="width:${tp}%;background:${tc}"></div></div>
-          <div class="exam-total-lbl" style="color:${tc}">${tg}/${tm} · ${tp}%</div>
-        </div>
-        <div class="exam-subj-list">${subjRows}</div>`;
+        <div class="ecm-bar"><div class="ecm-bar-fill" style="width:${tp}%;background:${tc}"></div></div>
+        <div class="ecm-chips">${chips}</div>`;
 
       card.querySelector('.edit-btn').addEventListener('click', () => openExamModal(ex.id));
       card.querySelector('.del-btn').addEventListener('click', () => {
