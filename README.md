@@ -1,7 +1,5 @@
 # Study Planner — All-in-One Board & Exam Tracker
 
-Try StudyTracker ! https://sbp359.github.io/Study-Tracker/
-
 A clean, fast, 100% static HTML/CSS/JS + JSON study tracker that runs directly in your browser using `localStorage` — no backend, no build step, and works offline.
 
 ## Included Boards & Competitive Exams (15 Tracks · 3,987 Chapters)
