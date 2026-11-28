@@ -7,6 +7,17 @@
 
   const STORAGE_KEY = 'sp_allinone_v2';
   const THEME_KEY = 'r12theme';
+  const FONT_KEY = 'sp_font';
+  const SIZE_KEY = 'sp_font_size';
+  const FONT_OPTIONS = [
+    { id: 'jakarta', name: 'Plus Jakarta Sans', tag: 'Default · Crisp modern', stack: "'Plus Jakarta Sans', system-ui, sans-serif" },
+    { id: 'dm',      name: 'DM Sans',           tag: 'Clean geometric',        stack: "'DM Sans', system-ui, sans-serif" },
+    { id: 'outfit',  name: 'Outfit',            tag: 'Smooth & rounded',       stack: "'Outfit', system-ui, sans-serif" },
+    { id: 'inter',   name: 'Inter',             tag: 'Classic neutral',        stack: "'Inter', system-ui, sans-serif" },
+    { id: 'plex',    name: 'IBM Plex Sans',     tag: 'Sharp & technical',      stack: "'IBM Plex Sans', system-ui, sans-serif" },
+    { id: 'mono',    name: 'JetBrains Mono',    tag: 'Monospace focus',        stack: "'JetBrains Mono', ui-monospace, monospace" },
+    { id: 'system',  name: 'System UI',         tag: 'Native device font',     stack: "system-ui, -apple-system, sans-serif" }
+  ];
   const AVATAR_COLORS = ['#2563EB', '#16A34A', '#EA580C', '#7C3AED', '#DC2626', '#0891B2', '#059669', '#4F46E5'];
   const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -254,19 +265,86 @@
     if (el) el.classList.remove('open');
   }
 
-  /* ── Theme ── */
+  /* ── Theme, Font & Appearance ── */
   function setTheme(dark) {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     lsSet(THEME_KEY, dark ? 'dark' : 'light');
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute('content', dark ? '#09090B' : '#2563EB');
     const btn = document.getElementById('themeToggle');
-    btn.textContent = dark ? '☀' : '☾';
-    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    if (btn) {
+      btn.textContent = dark ? '☀' : '☾';
+      btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+    syncAppearanceUI();
     if (getUser()) {
       buildStabs();
       buildTracker();
       if (curPage === 'plan') renderPlan();
       if (curPage === 'exams') renderExams();
     }
+  }
+
+  function getFontId() {
+    const saved = lsGet(FONT_KEY);
+    return FONT_OPTIONS.some(f => f.id === saved) ? saved : 'jakarta';
+  }
+
+  function setFont(fontId) {
+    const valid = FONT_OPTIONS.some(f => f.id === fontId) ? fontId : 'jakarta';
+    document.documentElement.dataset.font = valid;
+    lsSet(FONT_KEY, valid);
+    syncAppearanceUI();
+  }
+
+  function getFontSizeId() {
+    const saved = lsGet(SIZE_KEY);
+    return ['compact', 'default', 'large'].includes(saved) ? saved : 'default';
+  }
+
+  function setFontSize(sizeId) {
+    const valid = ['compact', 'default', 'large'].includes(sizeId) ? sizeId : 'default';
+    document.documentElement.dataset.size = valid;
+    lsSet(SIZE_KEY, valid);
+    syncAppearanceUI();
+  }
+
+  function syncAppearanceUI() {
+    const dark = isDark();
+    document.querySelectorAll('#themeSeg .app-seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.themeChoice === (dark ? 'dark' : 'light'));
+    });
+    const curSize = getFontSizeId();
+    document.querySelectorAll('#sizeSeg .app-seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.sizeChoice === curSize);
+    });
+    const curFont = getFontId();
+    document.querySelectorAll('#fontGrid .font-card').forEach(c => {
+      c.classList.toggle('active', c.dataset.fontId === curFont);
+    });
+  }
+
+  function openAppearanceSheet() {
+    const grid = document.getElementById('fontGrid');
+    if (grid && !grid.children.length) {
+      grid.innerHTML = FONT_OPTIONS.map(f => `
+        <button type="button" class="font-card" data-font-id="${f.id}">
+          <div class="font-card-info">
+            <div class="font-card-name" style="font-family:${f.stack}">${escHtml(f.name)}</div>
+            <div class="font-card-tag">${escHtml(f.tag)}</div>
+          </div>
+          <div class="font-card-chk">✓</div>
+        </button>`).join('');
+      grid.querySelectorAll('.font-card').forEach(card => {
+        card.addEventListener('click', () => {
+          setFont(card.dataset.fontId);
+          const picked = FONT_OPTIONS.find(x => x.id === card.dataset.fontId);
+          if (picked) showToast(`Font: ${picked.name}`);
+        });
+      });
+    }
+    syncAppearanceUI();
+    openOverlay('appearanceOverlay');
   }
 
   /* ── Topbar Header ── */
@@ -338,8 +416,10 @@
       b.className = 'stab' + (curTab === s.name ? ' active' : '');
       b.dataset.s = s.name;
       if (curTab === s.name) {
-        b.style.background = clr;
-        b.style.borderColor = clr;
+        const meta = DB && DB.subjectMeta && DB.subjectMeta[s.name];
+        const pillClr = (meta && meta.color) || '#2563EB';
+        b.style.background = pillClr;
+        b.style.borderColor = pillClr;
         b.style.color = '#fff';
       }
       b.innerHTML = `${window.APP_ICONS.getSubjectIconSVG(getSubjIconKey(s.name))}<span>${escHtml(getSubjShort(s.name))}</span>`;
@@ -1756,6 +1836,13 @@
 
   function bindEvents() {
     document.getElementById('themeToggle').addEventListener('click', () => setTheme(!isDark()));
+    document.getElementById('appearanceBtn').addEventListener('click', openAppearanceSheet);
+    document.querySelectorAll('#themeSeg .app-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => setTheme(btn.dataset.themeChoice === 'dark'));
+    });
+    document.querySelectorAll('#sizeSeg .app-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => setFontSize(btn.dataset.sizeChoice));
+    });
     document.getElementById('profileBtn').addEventListener('click', () => {
       if (!STORE.users.length) openWizard('create', null, 0);
       else openProfileSheet();
@@ -1864,7 +1951,7 @@
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.addEventListener('click', () => closeOverlay(btn.dataset.close));
     });
-    ['profileOverlay', 'examOverlay', 'assignOverlay', 'customOverlay', 'rschedOverlay', 'confirmOverlay'].forEach(id => {
+    ['profileOverlay', 'examOverlay', 'assignOverlay', 'customOverlay', 'rschedOverlay', 'confirmOverlay', 'appearanceOverlay'].forEach(id => {
       const ov = document.getElementById(id);
       ov.addEventListener('click', e => { if (e.target === ov) closeOverlay(id); });
     });
@@ -1877,6 +1964,8 @@
   }
 
   async function init() {
+    setFont(getFontId());
+    setFontSize(getFontSizeId());
     setTheme(lsGet(THEME_KEY) === 'dark');
     if (!DB) {
       try {

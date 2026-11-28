@@ -7,6 +7,10 @@
 <title>Study Planner — All-in-One Board &amp; Exam Tracker</title>
 <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+<script>try{var t=localStorage.getItem('r12theme'),f=localStorage.getItem('sp_font'),s=localStorage.getItem('sp_font_size');if(t==='dark')document.documentElement.dataset.theme='dark';if(f)document.documentElement.dataset.font=f;if(s)document.documentElement.dataset.size=s;}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,7 +25,8 @@
         <div class="topbar-sub-row">
           <small id="topSubtitle">All-in-One Board &amp; Exam Tracker</small>
           <a class="topbar-sbp-link" href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer" title="SBP 359">
-            <img class="topbar-sbp-logo" src="assets/sbp359-logo.png" alt="SBP 359">
+            <img class="topbar-sbp-logo sbp-logo-light" src="assets/sbp359-logo-light.png" alt="SBP 359">
+            <img class="topbar-sbp-logo sbp-logo-dark" src="assets/sbp359-logo.png" alt="SBP 359">
           </a>
         </div>
       </div>
@@ -30,6 +35,7 @@
         <span class="profile-avatar" id="topAvatar">S</span>
         <span class="profile-pill-name" id="topUserName">Setup</span>
       </button>
+      <button class="icon-btn font-btn" id="appearanceBtn" type="button" aria-label="Font and appearance settings" title="Font &amp; Appearance">Aa</button>
       <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">☾</button>
     </div>
 
@@ -169,7 +175,8 @@
   <div class="page-credit">Made with &lt;3 by <a href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer">~SBP359</a> · Stored locally in your browser</div>
   <div class="footer-brand-wrap">
     <a class="footer-brand-badge" href="https://github.com/sbp359" target="_blank" rel="noopener noreferrer" title="SBP 359 on GitHub">
-      <img src="assets/sbp359-logo.png" alt="SBP 359">
+      <img class="sbp-logo-light" src="assets/sbp359-logo-light.png" alt="SBP 359">
+      <img class="sbp-logo-dark" src="assets/sbp359-logo.png" alt="SBP 359">
     </a>
   </div>
 </footer>
@@ -280,6 +287,35 @@
     <div class="sheet-btns">
       <button class="sbtn sbtn-cancel" id="confirmCancelBtn" type="button">Cancel</button>
       <button class="sbtn sbtn-danger" id="confirmOkBtn" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── APPEARANCE & FONT MODAL ──────────── -->
+<div class="overlay" id="appearanceOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Appearance &amp; Font</div>
+    <div class="sheet-sub">Customize theme, typeface, and reading size</div>
+
+    <div class="app-sec-lbl">Theme</div>
+    <div class="app-seg" id="themeSeg">
+      <button type="button" class="app-seg-btn" data-theme-choice="light">☀ Light</button>
+      <button type="button" class="app-seg-btn" data-theme-choice="dark">☾ Dark</button>
+    </div>
+
+    <div class="app-sec-lbl">Font Family</div>
+    <div class="font-grid" id="fontGrid"></div>
+
+    <div class="app-sec-lbl">Text Size</div>
+    <div class="app-seg" id="sizeSeg">
+      <button type="button" class="app-seg-btn" data-size-choice="compact">Compact</button>
+      <button type="button" class="app-seg-btn" data-size-choice="default">Default</button>
+      <button type="button" class="app-seg-btn" data-size-choice="large">Large</button>
+    </div>
+
+    <div class="sheet-btns">
+      <button class="sbtn sbtn-ok" data-close="appearanceOverlay" type="button">Done</button>
     </div>
   </div>
 </div>
